@@ -14,12 +14,16 @@ public class PlayerRobot : MonoBehaviour
     [Header("Raycasting")]
     [SerializeField]
     LayerMask Ignore;
+    [SerializeField]
+    public LayerMask floorLayerMask;
 
-    float rayLength = 1f;
+    float rayLength = 0.5f;
+    float floorRayLength = 0.75f;
     Vector3 targetPosition;
     Vector3 targetRotate;
     bool isPlayerMoving = false;
     bool isPlayerRotating = false;
+    bool isFalling = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -30,9 +34,24 @@ public class PlayerRobot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // // floor collision
+        if(Physics.Raycast(transform.position, Vector3.down, floorRayLength, ~Ignore))
+            Debug.Log("Hit floor!");
+        Debug.DrawRay(transform.position,Vector3.down * floorRayLength,Color.green);
+
+        if(isFalling)
+        {
+            Debug.Log("Player is falling!");
+        }
         // move player
         if(isPlayerMoving)
         {
+            // check for collisions
+            // return if player hits an obstacle
+            Debug.DrawRay(transform.position,transform.forward,Color.red);
+            if(Physics.Raycast(transform.position,transform.forward,rayLength,~Ignore))
+                return;
+
             if (Vector3.Distance(transform.position, targetPosition) > snapDistance)
                 transform.position += transform.forward * moveSpeed * Time.deltaTime;
             else
@@ -65,7 +84,6 @@ public class PlayerRobot : MonoBehaviour
             return;
         transform.Rotate(rotateVector,Space.World);
         targetRotate = rotateVector;
-        isPlayerRotating = true;
     }
 
     public void Move(Vector3 distance)
@@ -73,13 +91,8 @@ public class PlayerRobot : MonoBehaviour
         // check for value and if already moving
         if(distance == Vector3.zero|| isPlayerMoving)
             return;
-
-        // return if player hits an obstacle
-        if(Physics.Raycast(transform.position,transform.forward,rayLength,~Ignore))
-            return;
         
         // set target variables so update() can move the player over time
-        Debug.Log(transform.forward);
         Vector3 forward = transform.forward;
         forward.x *= distance.x;
         forward.z *= distance.z;
@@ -89,6 +102,8 @@ public class PlayerRobot : MonoBehaviour
 
     public bool CanMove()
     {
-        return isPlayerMoving;
+        if (isPlayerMoving || isPlayerRotating)
+            return false;
+        return true;
     }
 }

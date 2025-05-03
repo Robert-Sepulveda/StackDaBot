@@ -1,14 +1,13 @@
 using UnityEngine;
 
-public class InstructionBlock
+public interface InstructionBlock
 {
-    public string type;
-    public bool needValue = false;
+    public bool isInst();
+    public string getType();
 
+    // return true if value block needed
+    public bool needValue();
 
-    // todo: implement a method that verifies the value is compatible with instruction
-    public bool checkValue()
-    {
-        return true;
-    }
+    // return value type needed for block
+    public string checkValue();
 }
