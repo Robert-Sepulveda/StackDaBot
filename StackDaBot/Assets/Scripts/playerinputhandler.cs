@@ -1,5 +1,7 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using System;
+using System.Collections;
 
 public class playerinputhandler : MonoBehaviour
 {
@@ -13,11 +15,11 @@ public class playerinputhandler : MonoBehaviour
 
     private bool noMoreMoves = false;
     private bool invalidMove = false;
+    private bool takingAction = false;
 
     // Update is called once per frame
     void Update()
     {
-        Vector3 rotate = Vector3.zero;
 
         // before taking the next action, we check for any game ending scenarios
         if (noMoreMoves)
@@ -50,16 +52,35 @@ public class playerinputhandler : MonoBehaviour
         // 4. execute action based off instruction
         if (currentInst.getType() == "Move")
         {
-            NumBlock N = (NumBlock)currentValue;
-            playerCharacter.Move(new Vector3(N.number,0f,5f));
+            if(!takingAction)
+                StartCoroutine(MovePlayer());
         }
         else if(currentInst.getType() == "Rotate")
         {
-            DirectionBlock D = (DirectionBlock)currentValue;
-            rotate.y = D.direction;
+            if(!takingAction)
+                StartCoroutine(RotatePlayer());
         }
+    }
 
+    private IEnumerator MovePlayer()
+    {
+        Debug.Log("Moving");
+        takingAction = true;
+        NumBlock N = (NumBlock)currentValue;
+        playerCharacter.Move(new Vector3(N.number,0f,5f));
+        yield return new WaitForSeconds(1.0f);
+        takingAction = false;
+    }
+
+    private IEnumerator RotatePlayer()
+    {
+        takingAction = true;
+        Vector3 rotate = Vector3.zero;
+        DirectionBlock D = (DirectionBlock)currentValue;
+        rotate.y = D.direction;
         playerCharacter.Rotate(rotate);
+        yield return new WaitForSeconds(1.0f);
+        takingAction = false;
     }
 
     // get the next instruction from the instruction handler and queue it for movement, return true upon success

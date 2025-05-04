@@ -18,7 +18,7 @@ public class PlayerRobot : MonoBehaviour
     public LayerMask floorLayerMask;
 
     float rayLength = 0.5f;
-    float floorRayLength = 0.75f;
+    float floorRayLength = 0.55f;
     Vector3 targetPosition;
     Vector3 targetRotate;
     bool isPlayerMoving = false;
@@ -34,14 +34,15 @@ public class PlayerRobot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // // floor collision
-        if(Physics.Raycast(transform.position, Vector3.down, floorRayLength, ~Ignore))
-            Debug.Log("Hit floor!");
+        // floor collision
+        isFalling = !Physics.Raycast(transform.position, Vector3.down, floorRayLength, ~Ignore);
         Debug.DrawRay(transform.position,Vector3.down * floorRayLength,Color.green);
 
         if(isFalling)
         {
             Debug.Log("Player is falling!");
+            transform.position += Vector3.down * moveSpeed * Time.deltaTime;
+            targetPosition.y = transform.position.y;
         }
         // move player
         if(isPlayerMoving)
@@ -50,7 +51,9 @@ public class PlayerRobot : MonoBehaviour
             // return if player hits an obstacle
             Debug.DrawRay(transform.position,transform.forward,Color.red);
             if(Physics.Raycast(transform.position,transform.forward,rayLength,~Ignore))
-                return;
+            {
+                targetPosition = transform.position;
+            }
 
             if (Vector3.Distance(transform.position, targetPosition) > snapDistance)
                 transform.position += transform.forward * moveSpeed * Time.deltaTime;
