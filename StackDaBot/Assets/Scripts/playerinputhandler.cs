@@ -35,7 +35,7 @@ public class playerinputhandler : MonoBehaviour
         }
         
         // 1. check if player can move
-        if (!playerCharacter.CanMove())
+        if (!playerCharacter.CanMove() || takingAction)
             return;
         // 2. get the next instruction from the instruction stack
         if(!ReadInstruction())
@@ -52,24 +52,21 @@ public class playerinputhandler : MonoBehaviour
         // 4. execute action based off instruction
         if (currentInst.getType() == "Move")
         {
-            if(!takingAction)
-                StartCoroutine(MovePlayer());
+            MovePlayer();
         }
         else if(currentInst.getType() == "Rotate")
         {
-            if(!takingAction)
-                StartCoroutine(RotatePlayer());
+            StartCoroutine(RotatePlayer());
         }
     }
 
-    private IEnumerator MovePlayer()
+    private void MovePlayer()
     {
-        Debug.Log("Moving");
         takingAction = true;
         NumBlock N = (NumBlock)currentValue;
         playerCharacter.Move(new Vector3(N.number,0f,5f));
-        yield return new WaitForSeconds(1.0f);
         takingAction = false;
+        return;
     }
 
     private IEnumerator RotatePlayer()
@@ -79,7 +76,7 @@ public class playerinputhandler : MonoBehaviour
         DirectionBlock D = (DirectionBlock)currentValue;
         rotate.y = D.direction;
         playerCharacter.Rotate(rotate);
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(1f);
         takingAction = false;
     }
 
@@ -97,7 +94,6 @@ public class playerinputhandler : MonoBehaviour
             invalidMove=true;
             return false;
         }
-        Debug.Log(currentInst.getType());
         return true;
     }
 
@@ -109,7 +105,6 @@ public class playerinputhandler : MonoBehaviour
             noMoreMoves=true;
             return false;
         }
-        Debug.Log(currentValue.getType());
         return true;
     }
 

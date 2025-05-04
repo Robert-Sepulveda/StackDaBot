@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using System.Collections;
 
 public class PlayerRobot : MonoBehaviour
 {   
@@ -9,7 +10,9 @@ public class PlayerRobot : MonoBehaviour
     [SerializeField]
     float snapDistance = 0.05f;
     [SerializeField]
-    float rotateSnapDistance = 1;
+    float rotateSpeed = 0.5f;
+    [SerializeField]
+    float rotateSnapDistance = 1f;
 
     [Header("Raycasting")]
     [SerializeField]
@@ -25,12 +28,6 @@ public class PlayerRobot : MonoBehaviour
     bool isPlayerRotating = false;
     bool isFalling = false;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -40,12 +37,46 @@ public class PlayerRobot : MonoBehaviour
 
         if(isFalling)
         {
-            Debug.Log("Player is falling!");
             transform.position += Vector3.down * moveSpeed * Time.deltaTime;
             targetPosition.y = transform.position.y;
         }
-        // move player
-        if(isPlayerMoving)
+    }
+
+    public void Rotate(Vector3 rotateVector)
+    {
+        if(rotateVector == Vector3.zero || !CanMove())
+            return;
+        targetRotate = rotateVector;
+        isPlayerRotating = true;
+        StartCoroutine(RotatePlayer(rotateSpeed));
+    }
+
+    public void Move(Vector3 distance)
+    {
+        // check for value and if already moving
+        if(distance == Vector3.zero|| !CanMove())
+            return;
+        
+        // set target variables so update() can move the player over time
+        Vector3 forward = transform.forward;
+        forward.x *= distance.x;
+        forward.z *= distance.z;
+        targetPosition = transform.position + forward;
+        isPlayerMoving = true;
+        StartCoroutine(MovePlayer());
+        return;
+    }
+
+    public bool CanMove()
+    {
+        if (isPlayerMoving || isPlayerRotating)
+            return false;
+        return true;
+    }
+
+    private IEnumerator MovePlayer()
+    {
+        while(transform.position != targetPosition)
         {
             // check for collisions
             // return if player hits an obstacle
@@ -61,52 +92,29 @@ public class PlayerRobot : MonoBehaviour
             {
                 // snap player to exact targetPosition
                 transform.position = targetPosition;
-                isPlayerMoving = false;
             }
+            yield return null;
         }
+        yield return new WaitForSeconds(1f);
+        isPlayerMoving = false;
+    }
 
+    private IEnumerator RotatePlayer(float duration)
+    {
+        float yRotation;
+        float startAngle = transform.eulerAngles.y;
+        targetRotate.y += startAngle;
+        float time = 0f;
         // rotate player
-        // if(isPlayerRotating)
-        // {
-        //     Debug.Log(targetRotate);
-        //     Debug.Log(transform.forward);
-        //     Debug.Log(Vector3.Angle(targetRotate, transform.forward));
-        //     if (Vector3.Angle(targetRotate, transform.forward) > rotateSnapDistance)
-        //         transform.Rotate(targetRotate * moveSpeed * Time.deltaTime,Space.World);
-        //     else
-        //     {
-        //         transform.Rotate(targetRotate,Space.World);
-        //         isPlayerRotating = false;
-        //     }
-        // }
-    }
-
-    public void Rotate(Vector3 rotateVector)
-    {
-        if(rotateVector == Vector3.zero || isPlayerMoving)
-            return;
-        transform.Rotate(rotateVector,Space.World);
-        targetRotate = rotateVector;
-    }
-
-    public void Move(Vector3 distance)
-    {
-        // check for value and if already moving
-        if(distance == Vector3.zero|| isPlayerMoving)
-            return;
-        
-        // set target variables so update() can move the player over time
-        Vector3 forward = transform.forward;
-        forward.x *= distance.x;
-        forward.z *= distance.z;
-        targetPosition = transform.position + forward;
-        isPlayerMoving = true;
-    }
-
-    public bool CanMove()
-    {
-        if (isPlayerMoving || isPlayerRotating)
-            return false;
-        return true;
+        // while (Vector3.Angle(targetRotate, transform.forward) > rotateSnapDistance)
+        while(time < duration)
+        {
+            time += Time.deltaTime;
+            yRotation = Mathf.Lerp(startAngle,targetRotate.y,time/duration) %360.0f;
+            transform.eulerAngles = new Vector3(transform.eulerAngles.x, yRotation,transform.eulerAngles.z);
+            yield return null;
+        }
+        yield return new WaitForSeconds(1f);
+        isPlayerRotating = false;
     }
 }
