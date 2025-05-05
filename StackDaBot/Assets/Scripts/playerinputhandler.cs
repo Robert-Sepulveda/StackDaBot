@@ -15,22 +15,27 @@ public class playerinputhandler : MonoBehaviour
 
     private bool noMoreMoves = false;
     private bool invalidMove = false;
+    private bool playerDied = false;
+    private bool playerWin = false;
     private bool takingAction = false;
+    string gameNotif;
 
     // Update is called once per frame
     void Update()
     {
-
         // before taking the next action, we check for any game ending scenarios
-        if (noMoreMoves)
+        CheckWin();
+        if(playerWin)
+        {
+            Debug.Log(gameNotif);
+            return;
+        }
+        CheckDeath();
+        if (noMoreMoves||invalidMove||playerDied)
         {
             // send a notification that the game is over if there are no more moves left
             // TODO: send notification to game manager
-            return;
-        }
-        else if(invalidMove)
-        {
-            // TODO: send a notification to a game manager
+            Debug.Log(gameNotif);
             return;
         }
         
@@ -45,7 +50,7 @@ public class playerinputhandler : MonoBehaviour
         // 3. get a value if needed
         if(currentInst.needValue())
         {
-            if(!ReadValue() || !CompareValues())
+            if(!ReadValue())
                 return;
         }
 
@@ -56,10 +61,11 @@ public class playerinputhandler : MonoBehaviour
         }
         else if(currentInst.getType() == "Rotate")
         {
-            StartCoroutine(RotatePlayer());
+            RotatePlayer();
         }
     }
 
+    // handle moving player
     private void MovePlayer()
     {
         takingAction = true;
@@ -69,40 +75,45 @@ public class playerinputhandler : MonoBehaviour
         return;
     }
 
-    private IEnumerator RotatePlayer()
+    // handle player rotation
+    private void RotatePlayer()
     {
         takingAction = true;
         Vector3 rotate = Vector3.zero;
         DirectionBlock D = (DirectionBlock)currentValue;
         rotate.y = D.direction;
         playerCharacter.Rotate(rotate);
-        yield return new WaitForSeconds(1f);
         takingAction = false;
+        return;
     }
 
-    // get the next instruction from the instruction handler and queue it for movement, return true upon success
+    // get the next instruction from instructionhandler
     bool ReadInstruction()
     {
         currentInst = instructionHandler.Pop();
-        if(currentInst == null)
-        {
-            noMoreMoves=true;
+        if(CheckForMove(currentInst))
             return false;
-        }
         else if(!currentInst.isInst())
         {
             invalidMove=true;
+            gameNotif="invalidMove";
             return false;
         }
         return true;
     }
 
+    // read a value box from instructionhandler
     bool ReadValue()
     {
         currentValue = instructionHandler.Pop();
-        if(currentValue == null)
+        if(CheckForMove(currentValue))
+            return false;
+        if (!CompareValues())
+            return false;
+        else if(currentValue.isInst())
         {
-            noMoreMoves=true;
+            invalidMove=true;
+            gameNotif="invalidMove";
             return false;
         }
         return true;
@@ -113,7 +124,36 @@ public class playerinputhandler : MonoBehaviour
     {
         if (currentValue.getType() == currentInst.checkValue())
             return true;
+        gameNotif="invalidMove";
         invalidMove = true;
         return false;
+    }
+
+    // check for moves
+    private bool CheckForMove(InstructionBlock block)
+    {
+        if(block == null)
+        {
+            noMoreMoves=true;
+            gameNotif = "NoMoves";
+            return true;
+        }
+        return false;
+    }
+
+    // check for death
+    public void CheckDeath()
+    {
+        playerDied = playerCharacter.CheckKillBoxCollision();
+        if(playerDied)
+            gameNotif = "Death";
+    }
+
+    // check for win
+    public void CheckWin()
+    {
+        playerWin = playerCharacter.CheckExitCollision();
+        if(playerWin)
+            gameNotif = "YouWin";
     }
 }

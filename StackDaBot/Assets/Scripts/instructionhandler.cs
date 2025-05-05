@@ -7,9 +7,9 @@ public class instructionhandler : MonoBehaviour
     Stack<InstructionBlock> instructionReader = new Stack<InstructionBlock>();
     void Start()
     {
-        Push(new NumBlock(5f));
+        Push(new NumBlock(3f));
         Push(new MoveBlock());
-        Push(new DirectionBlock(90));
+        Push(new DirectionBlock(-90));
         Push(new RotateBlock());
         Push(new NumBlock(5f));
         Push(new MoveBlock());

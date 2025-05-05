@@ -16,9 +16,11 @@ public class PlayerRobot : MonoBehaviour
 
     [Header("Raycasting")]
     [SerializeField]
-    LayerMask Ignore;
+    LayerMask wallMask;
     [SerializeField]
-    public LayerMask floorLayerMask;
+    LayerMask killBoxMask;
+    [SerializeField]
+    LayerMask exitMask;
 
     float rayLength = 0.5f;
     float floorRayLength = 0.55f;
@@ -28,18 +30,14 @@ public class PlayerRobot : MonoBehaviour
     bool isPlayerRotating = false;
     bool isFalling = false;
 
+    void Start()
+    {
+    }
+
     // Update is called once per frame
     void Update()
     {
-        // floor collision
-        isFalling = !Physics.Raycast(transform.position, Vector3.down, floorRayLength, ~Ignore);
-        Debug.DrawRay(transform.position,Vector3.down * floorRayLength,Color.green);
-
-        if(isFalling)
-        {
-            transform.position += Vector3.down * moveSpeed * Time.deltaTime;
-            targetPosition.y = transform.position.y;
-        }
+        ApplyGravity();
     }
 
     public void Rotate(Vector3 rotateVector)
@@ -74,19 +72,49 @@ public class PlayerRobot : MonoBehaviour
         return true;
     }
 
+    // takes a mask and returns true if there is a raycast collision detected
+    private bool CheckCollision(Vector3 pos, Vector3 ray, float len, LayerMask mask)
+    {
+        Debug.DrawRay(pos,ray * len,Color.green);
+        return Physics.Raycast(pos, ray, len, mask);
+    }
+
+    // checks and applies gravity to player
+    private void ApplyGravity()
+    {
+        // check floor collision
+        isFalling = !CheckCollision(transform.position, Vector3.down, floorRayLength, wallMask);
+
+        // apply if no floor detected
+        if(isFalling)
+        {
+            transform.position += Vector3.down * moveSpeed * Time.deltaTime;
+            targetPosition.y = transform.position.y;
+        }
+        return;
+    }
+
+    public bool CheckKillBoxCollision()
+    {
+        return CheckCollision(transform.position, Vector3.down, floorRayLength, killBoxMask);
+    }
+
+    public bool CheckExitCollision()
+    {
+        return CheckCollision(transform.position,transform.forward,rayLength,exitMask);
+    }
+
     private IEnumerator MovePlayer()
     {
         while(transform.position != targetPosition)
         {
             // check for collisions
             // return if player hits an obstacle
-            Debug.DrawRay(transform.position,transform.forward,Color.red);
-            if(Physics.Raycast(transform.position,transform.forward,rayLength,~Ignore))
+            if(CheckCollision(transform.position,transform.forward,rayLength,wallMask))
             {
                 targetPosition = transform.position;
             }
-
-            if (Vector3.Distance(transform.position, targetPosition) > snapDistance)
+            else if (Vector3.Distance(transform.position, targetPosition) > snapDistance)
                 transform.position += transform.forward * moveSpeed * Time.deltaTime;
             else
             {

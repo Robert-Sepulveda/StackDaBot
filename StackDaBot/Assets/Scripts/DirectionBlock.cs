@@ -12,7 +12,7 @@ public class DirectionBlock : InstructionBlock
         direction = dir;
     }
 
-    public bool isInst() => true;
+    public bool isInst() => false;
     public string getType() => type;
     public bool needValue() => value;
     public string checkValue() => valueType;
