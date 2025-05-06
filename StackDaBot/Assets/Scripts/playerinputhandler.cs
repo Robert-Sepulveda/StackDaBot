@@ -13,6 +13,7 @@ public class playerinputhandler : MonoBehaviour
     InstructionBlock currentInst;
     InstructionBlock currentValue;
 
+    public bool startGame = false;
     private bool noMoreMoves = false;
     private bool invalidMove = false;
     private bool playerDied = false;
@@ -23,6 +24,8 @@ public class playerinputhandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(!startGame)
+            return;
         // before taking the next action, we check for any game ending scenarios
         CheckWin();
         if(playerWin)

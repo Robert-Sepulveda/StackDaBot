@@ -11,8 +11,6 @@ public class PlayerRobot : MonoBehaviour
     float snapDistance = 0.05f;
     [SerializeField]
     float rotateSpeed = 0.5f;
-    [SerializeField]
-    float rotateSnapDistance = 1f;
 
     [Header("Raycasting")]
     [SerializeField]
