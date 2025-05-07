@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -15,6 +16,10 @@ public class GameManager : MonoBehaviour
     [Header("Buttons")]
     [SerializeField]
     Button startButton;
+    [SerializeField]
+    Button valuesButton;
+    [SerializeField]
+    Button actionsButton;
     [SerializeField]
     Button moveButton;
     [SerializeField]
@@ -35,6 +40,12 @@ public class GameManager : MonoBehaviour
     Button right;
     [SerializeField]
     Button back;
+    [SerializeField]
+    Button restart;
+    [SerializeField]
+    Button NLorQuit;
+    [SerializeField]
+    Button levels;
 
     [Header("SubMenus")]
     [SerializeField]
@@ -43,12 +54,23 @@ public class GameManager : MonoBehaviour
     GameObject IntMenu;
     [SerializeField]
     GameObject DirMenu;
+    [SerializeField]
+    GameObject InstMenu;
+    [SerializeField]
+    GameObject WinMenu;
+    [SerializeField]
+    GameObject LoseMenu;
+    [SerializeField]
+    TMP_Text WinPanelText;
 
-    private int NUMOFSPACES=5;
+    string hint;
+    private bool win = false;
 
     void Start()
     {
         startButton.onClick.AddListener(startGame);
+        valuesButton.onClick.AddListener(openValues);
+        actionsButton.onClick.AddListener(openActions);
         moveButton.onClick.AddListener(createMoveBlock);
         rotateButton.onClick.AddListener(createRotateBlock);
         num1.onClick.AddListener(()=>createNumBlock(1));
@@ -56,9 +78,32 @@ public class GameManager : MonoBehaviour
         num3.onClick.AddListener(()=>createNumBlock(3));
         num4.onClick.AddListener(()=>createNumBlock(4));
         num5.onClick.AddListener(()=>createNumBlock(5));
-        left.onClick.AddListener(()=>createNumBlock(-90));
-        right.onClick.AddListener(()=>createNumBlock(90));
-        back.onClick.AddListener(()=>createNumBlock(180));
+        left.onClick.AddListener(()=>createDirBlock(-90));
+        right.onClick.AddListener(()=>createDirBlock(90));
+        back.onClick.AddListener(()=>createDirBlock(180));
+    }
+
+    public void GameOver(string msg)
+    {
+        if (msg == "NoMoves")
+            if(pih.getWin())
+                win = true;
+            else
+                hint = "Hey I need more Instructions!";
+        else if (msg == "Death")
+            hint = "YOU DIED";
+        else if (msg == "Invalid")
+            hint = "Hey I can't read these instructions!";
+
+        if (win)
+        {
+            WinPanelText.text = "You Win!";
+        }
+        else
+        {
+            WinPanelText.text = "You Lose!";
+        }
+        TogglePanelOn(WinMenu);
     }
 
     public void startGame()
@@ -67,18 +112,30 @@ public class GameManager : MonoBehaviour
         pih.startGame = true;
     }
 
+    public void openValues()
+    {
+        TogglePanelOn(DirMenu);
+        TogglePanelOn(IntMenu);
+        TogglePanelOff(InstMenu);
+    }
+
+    public void openActions()
+    {
+        TogglePanelOff(DirMenu);
+        TogglePanelOff(IntMenu);
+        TogglePanelOn(InstMenu);
+    }
+
     public void createMoveBlock()
     {
-        TogglePanelOn(IntMenu);
-        TogglePanelOff(DirMenu);
+        TogglePanelOff(InstMenu);
         ih.SpawnBlock(new MoveBlock());
         return;
     }
 
     public void createRotateBlock()
     {
-        TogglePanelOn(DirMenu);
-        TogglePanelOff(IntMenu);
+        TogglePanelOff(InstMenu);
         ih.SpawnBlock(new RotateBlock());
         return;
     }
@@ -86,11 +143,13 @@ public class GameManager : MonoBehaviour
     public void createNumBlock(float value)
     {
         TogglePanelOff(IntMenu);
+        TogglePanelOff(DirMenu);
         ih.SpawnBlock(new NumBlock(value));
     }
 
     public void createDirBlock(int value)
     {
+        TogglePanelOff(IntMenu);
         TogglePanelOff(DirMenu);
         ih.SpawnBlock(new DirectionBlock(value));
     }

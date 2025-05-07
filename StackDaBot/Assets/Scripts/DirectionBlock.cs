@@ -6,6 +6,7 @@ public class DirectionBlock : InstructionBlock
     public bool value = false;
     public string valueType = "None";
     public float direction;
+    public GameObject prefab;
 
     public DirectionBlock(float dir)
     {
@@ -16,4 +17,14 @@ public class DirectionBlock : InstructionBlock
     public string getType() => type;
     public bool needValue() => value;
     public string checkValue() => valueType;
+    public GameObject getObject() => prefab;
+
+    public bool setObject(GameObject reference)
+    {
+        prefab = reference;
+        if(prefab)
+            return true;
+        else
+            return false;
+    }
 }

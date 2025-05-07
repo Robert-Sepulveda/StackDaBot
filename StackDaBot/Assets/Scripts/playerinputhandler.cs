@@ -9,6 +9,8 @@ public class playerinputhandler : MonoBehaviour
     PlayerRobot playerCharacter;
     [SerializeField]
     instructionhandler instructionHandler;
+    [SerializeField]
+    GameManager gm;
 
     InstructionBlock currentInst;
     InstructionBlock currentValue;
@@ -19,26 +21,22 @@ public class playerinputhandler : MonoBehaviour
     private bool playerDied = false;
     private bool playerWin = false;
     private bool takingAction = false;
-    string gameNotif;
+    public string gameNotif = "";
 
     // Update is called once per frame
     void Update()
     {
         if(!startGame)
             return;
-        // before taking the next action, we check for any game ending scenarios
+        // check win
         CheckWin();
-        if(playerWin)
-        {
-            Debug.Log(gameNotif);
-            return;
-        }
+        // even if player wins, we have to check its valid
         CheckDeath();
         if (noMoreMoves||invalidMove||playerDied)
         {
             // send a notification that the game is over if there are no more moves left
             // TODO: send notification to game manager
-            Debug.Log(gameNotif);
+            MsgGame();
             return;
         }
         
@@ -153,10 +151,16 @@ public class playerinputhandler : MonoBehaviour
     }
 
     // check for win
-    public void CheckWin()
+    private void CheckWin()
     {
-        playerWin = playerCharacter.CheckExitCollision();
-        if(playerWin)
-            gameNotif = "YouWin";
+        if(playerCharacter.CheckExitCollision())
+            playerWin = true;
+    }
+
+    public bool getWin() => playerWin;
+
+    public void MsgGame()
+    {
+        gm.GameOver(gameNotif);
     }
 }
