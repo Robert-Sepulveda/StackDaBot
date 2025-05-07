@@ -27,15 +27,26 @@ public class PlayerRobot : MonoBehaviour
     bool isPlayerMoving = false;
     bool isPlayerRotating = false;
     bool isFalling = false;
-
-    void Start()
-    {
-    }
+    string color = "green";
 
     // Update is called once per frame
     void Update()
     {
         ApplyGravity();
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.tag=="ColorChanger")
+        {
+            // change color
+            Debug.Log("Triggered by color changer");
+        }
+        else if(other.tag=="ColorGate")
+        {
+            // check color
+            Debug.Log("Triggered by color gate");
+        }
     }
 
     public void Rotate(Vector3 rotateVector)

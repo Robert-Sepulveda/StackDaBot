@@ -90,6 +90,7 @@ public class GameManager : MonoBehaviour
         left.onClick.AddListener(()=>createDirBlock(-90));
         right.onClick.AddListener(()=>createDirBlock(90));
         back.onClick.AddListener(()=>createDirBlock(180));
+        ContorQuit.onClick.AddListener(()=>Continue());
         restart.onClick.AddListener(restartLevel);
     }
 
@@ -175,7 +176,7 @@ public class GameManager : MonoBehaviour
 
     public void restartLevel()
     {
-        SceneManager.LoadScene("Level0");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void quitGame()
@@ -187,6 +188,11 @@ public class GameManager : MonoBehaviour
             Application.Quit();
         #endif
     }
+
+    public void Continue()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    } 
 
     public void TogglePanelOn(GameObject panel)
     {

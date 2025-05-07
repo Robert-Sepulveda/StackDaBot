@@ -72,7 +72,7 @@ public class playerinputhandler : MonoBehaviour
     {
         takingAction = true;
         NumBlock N = (NumBlock)currentValue;
-        playerCharacter.Move(new Vector3(N.number,0f,5f));
+        playerCharacter.Move(new Vector3(N.number,0f,N.number));
         takingAction = false;
         return;
     }
