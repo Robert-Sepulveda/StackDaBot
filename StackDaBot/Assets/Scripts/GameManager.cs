@@ -2,9 +2,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    // Probably the ugliest UI management - I have no clue what Im doing
+    // sorry :P
     [Header("playerinput")]
     [SerializeField]
     playerinputhandler pih;
@@ -43,7 +46,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     Button restart;
     [SerializeField]
-    Button NLorQuit;
+    Button ContorQuit;
     [SerializeField]
     Button levels;
 
@@ -59,9 +62,15 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     GameObject WinMenu;
     [SerializeField]
-    GameObject LoseMenu;
+    GameObject StartHint;
+
+    [Header("TextBoxes")]
     [SerializeField]
     TMP_Text WinPanelText;
+    [SerializeField]
+    TMP_Text HintText;
+    [SerializeField]
+    TMP_Text Quit;
 
     string hint;
     private bool win = false;
@@ -81,6 +90,7 @@ public class GameManager : MonoBehaviour
         left.onClick.AddListener(()=>createDirBlock(-90));
         right.onClick.AddListener(()=>createDirBlock(90));
         back.onClick.AddListener(()=>createDirBlock(180));
+        restart.onClick.AddListener(restartLevel);
     }
 
     public void GameOver(string msg)
@@ -89,27 +99,36 @@ public class GameManager : MonoBehaviour
             if(pih.getWin())
                 win = true;
             else
-                hint = "Hey I need more Instructions!";
+                hint = "Stack : Hey I need more Instructions!";
         else if (msg == "Death")
-            hint = "YOU DIED";
-        else if (msg == "Invalid")
-            hint = "Hey I can't read these instructions!";
+            hint = "Stack : YOU KILLED ME!";
+        else if (msg == "invalidMove")
+            hint = "Stack : Hey I can't read these instructions!";
 
         if (win)
         {
             WinPanelText.text = "You Win!";
+            hint = "Stack : W's in da chat";
         }
         else
         {
             WinPanelText.text = "You Lose!";
+            Quit.text = "Quit";
+            ContorQuit.onClick.AddListener(quitGame);
         }
+        HintText.text = hint;
         TogglePanelOn(WinMenu);
     }
 
     public void startGame()
     {
-        TogglePanelOff(PreGame);
-        pih.startGame = true;
+        if(!ih.isEmpty())
+        {
+            TogglePanelOff(PreGame);
+            pih.startGame = true;
+        }
+        else
+            TogglePanelOn(StartHint);
     }
 
     public void openValues()
@@ -152,6 +171,21 @@ public class GameManager : MonoBehaviour
         TogglePanelOff(IntMenu);
         TogglePanelOff(DirMenu);
         ih.SpawnBlock(new DirectionBlock(value));
+    }
+
+    public void restartLevel()
+    {
+        SceneManager.LoadScene("Level0");
+    }
+
+    public void quitGame()
+    {
+        // safe and cleaner to use preprocessor directives
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
     }
 
     public void TogglePanelOn(GameObject panel)

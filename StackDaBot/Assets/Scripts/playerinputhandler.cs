@@ -37,6 +37,7 @@ public class playerinputhandler : MonoBehaviour
             // send a notification that the game is over if there are no more moves left
             // TODO: send notification to game manager
             MsgGame();
+            takingAction=true;
             return;
         }
         

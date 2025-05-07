@@ -64,4 +64,11 @@ public class instructionhandler : MonoBehaviour
             // block.setObject(Spawner.SpawnBlock(numBlock));
         Push(block);
     }
+
+    public bool isEmpty()
+    {
+        if (instructionReader.Count > 0)
+            return false;
+        return true;
+    }
 }
