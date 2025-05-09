@@ -72,12 +72,20 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     TMP_Text Quit;
 
+    [Header("Audio")]
+    [SerializeField]
+    AudioSource audioSource;
+    [SerializeField]
+    AudioClip music;
+
     string hint;
     private bool win = false;
     private int nextLevel = 0;
 
     void Start()
     {
+        audioSource.resource = music;
+        audioSource.Play();
         startButton.onClick.AddListener(startGame);
         valuesButton.onClick.AddListener(openValues);
         actionsButton.onClick.AddListener(openActions);
