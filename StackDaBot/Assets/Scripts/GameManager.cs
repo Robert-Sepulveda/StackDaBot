@@ -74,6 +74,7 @@ public class GameManager : MonoBehaviour
 
     string hint;
     private bool win = false;
+    private int nextLevel = 0;
 
     void Start()
     {
@@ -191,7 +192,7 @@ public class GameManager : MonoBehaviour
 
     public void Continue()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex+nextLevel);
     } 
 
     public void TogglePanelOn(GameObject panel)

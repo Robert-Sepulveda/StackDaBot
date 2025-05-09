@@ -21,7 +21,7 @@ public class PlayerRobot : MonoBehaviour
     LayerMask exitMask;
 
     float rayLength = 0.5f;
-    float floorRayLength = 0.55f;
+    public float floorRayLength = 0.55f;
     Vector3 targetPosition;
     Vector3 targetRotate;
     bool isPlayerMoving = false;
