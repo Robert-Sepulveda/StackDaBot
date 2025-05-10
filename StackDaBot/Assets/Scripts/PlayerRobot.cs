@@ -19,34 +19,126 @@ public class PlayerRobot : MonoBehaviour
     LayerMask killBoxMask;
     [SerializeField]
     LayerMask exitMask;
+    [SerializeField]
+    LayerMask colorChanger;
+    [SerializeField]
+    LayerMask energyGate;
 
+    [Header("Material")]
+    [SerializeField]
+    Material tankMetal;
+
+    [Header("Audio")]
+    [SerializeField]
+    AudioClip tankMovingSFX;
+    [SerializeField]
+    AudioSource sfx;
+    [SerializeField]
+    public AudioSource tanksfx;
+    [SerializeField]
+    AudioClip energyDeath;
+    [SerializeField]
+    AudioClip energyTraverse;
+    [SerializeField]
+    AudioClip changeColors;
+
+
+
+    RaycastHit hit;
     float rayLength = 0.5f;
-    public float floorRayLength = 0.55f;
+    float floorRayLength = 0.18f;
     Vector3 targetPosition;
     Vector3 targetRotate;
     bool isPlayerMoving = false;
     bool isPlayerRotating = false;
     bool isFalling = false;
-    string color = "green";
+    bool isPlayerDead = false;
+    bool playedTraverseSound = false;
+    bool playedChangeSound = false;
+    string color = "none";
+    Renderer ren;
+    Color baseColor = new Color (127/255f,167/255f,183/255f);
 
-    // Update is called once per frame
-    void Update()
+    void Start()
     {
+        tankMetal.color = baseColor;
+    }
+
+    void FixedUpdate()
+    {
+        if(Physics.Raycast(transform.position,transform.forward,out hit,rayLength,colorChanger))
+        {
+            ColorChanger changer = hit.transform.GetComponent<ColorChanger>();
+            if(changer != null)
+            {
+                changeSound();
+                color = changer.getColor();
+                changeColor();
+            }
+        }
+        else if(Physics.Raycast(transform.position,transform.forward,out hit,rayLength,energyGate))
+        {
+            Gate gate = hit.transform.GetComponent<Gate>();
+            if(gate != null)
+            {
+                if(!gate.checkColor(color))
+                {
+                    energyDeathSound();
+                    isPlayerDead = true;
+                }
+                else
+                {
+                    traverseSound();
+                }
+                
+            }
+        }
         ApplyGravity();
     }
 
-    void OnTriggerEnter(Collider other)
+    private void changeSound()
     {
-        if (other.tag=="ColorChanger")
+        if(playedChangeSound)
+            return;
+        playedChangeSound = true;
+        sfx.resource = changeColors;
+        sfx.time=10.0f;
+        sfx.Play();
+    }
+
+    private void traverseSound()
+    {
+        if(playedTraverseSound)
+            return;
+        playedTraverseSound = true;
+        sfx.resource = energyTraverse;
+        sfx.Play();
+    }
+
+    private void energyDeathSound()
+    {
+        if(playedTraverseSound)
+            return;
+        playedTraverseSound = true;
+        sfx.resource = energyDeath;
+        sfx.Play();
+    }
+
+    private void changeColor()
+    {
+        if(color == "yellow")
         {
-            // change color
-            Debug.Log("Triggered by color changer");
+            tankMetal.color = Color.yellow;
         }
-        else if(other.tag=="ColorGate")
+        if(color=="blue")
         {
-            // check color
-            Debug.Log("Triggered by color gate");
+            tankMetal.color = Color.blue;
         }
+    }
+
+    public bool checkDeath()
+    {
+        return isPlayerDead;
     }
 
     public void Rotate(Vector3 rotateVector)
@@ -115,6 +207,9 @@ public class PlayerRobot : MonoBehaviour
 
     private IEnumerator MovePlayer()
     {
+        tanksfx.resource = tankMovingSFX;
+        tanksfx.time=30f;
+        tanksfx.Play();
         while(transform.position != targetPosition)
         {
             // check for collisions
@@ -132,12 +227,16 @@ public class PlayerRobot : MonoBehaviour
             }
             yield return null;
         }
+        tanksfx.Stop();
         yield return new WaitForSeconds(1f);
         isPlayerMoving = false;
     }
 
     private IEnumerator RotatePlayer(float duration)
     {
+        tanksfx.resource = tankMovingSFX;
+        tanksfx.time=30f;
+        tanksfx.Play();
         float yRotation;
         float startAngle = transform.eulerAngles.y;
         targetRotate.y += startAngle;
@@ -151,6 +250,7 @@ public class PlayerRobot : MonoBehaviour
             transform.eulerAngles = new Vector3(transform.eulerAngles.x, yRotation,transform.eulerAngles.z);
             yield return null;
         }
+        tanksfx.Stop();
         yield return new WaitForSeconds(1f);
         isPlayerRotating = false;
     }

@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     Button startButton;
     [SerializeField]
+    Button undoButton;
+    [SerializeField]
     Button valuesButton;
     [SerializeField]
     Button actionsButton;
@@ -46,7 +48,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     Button restart;
     [SerializeField]
-    Button ContorQuit;
+    GameObject ContinueButton;
+    [SerializeField]
+    GameObject QuitButton;
     [SerializeField]
     Button levels;
 
@@ -76,17 +80,24 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     AudioSource audioSource;
     [SerializeField]
+    AudioSource sfx;
+    [SerializeField]
     AudioClip music;
+    [SerializeField]
+    AudioClip levelComplete;
+    [SerializeField]
+    AudioClip uiClick;
 
     string hint;
     private bool win = false;
-    private int nextLevel = 0;
+    public int nextLevel = 1;
 
     void Start()
     {
         audioSource.resource = music;
         audioSource.Play();
         startButton.onClick.AddListener(startGame);
+        undoButton.onClick.AddListener(undoMove);
         valuesButton.onClick.AddListener(openValues);
         actionsButton.onClick.AddListener(openActions);
         moveButton.onClick.AddListener(createMoveBlock);
@@ -99,8 +110,9 @@ public class GameManager : MonoBehaviour
         left.onClick.AddListener(()=>createDirBlock(-90));
         right.onClick.AddListener(()=>createDirBlock(90));
         back.onClick.AddListener(()=>createDirBlock(180));
-        ContorQuit.onClick.AddListener(()=>Continue());
         restart.onClick.AddListener(restartLevel);
+        // ContinueButton.onClick.AddListener(Continue);
+        // QuitButton.onClick.AddListener(quitGame);
     }
 
     public void GameOver(string msg)
@@ -118,13 +130,17 @@ public class GameManager : MonoBehaviour
         if (win)
         {
             WinPanelText.text = "You Win!";
-            hint = "Stack : W's in da chat";
+            hint = "Stack : Great job!";
+            audioSource.Pause();
+            audioSource.resource = levelComplete;
+            audioSource.Play();
         }
         else
         {
+            ContinueButton.SetActive(false);
+            QuitButton.SetActive(true);
             WinPanelText.text = "You Lose!";
             Quit.text = "Quit";
-            ContorQuit.onClick.AddListener(quitGame);
         }
         HintText.text = hint;
         TogglePanelOn(WinMenu);
@@ -132,6 +148,8 @@ public class GameManager : MonoBehaviour
 
     public void startGame()
     {
+        sfx.resource = uiClick;
+        sfx.Play();
         if(!ih.isEmpty())
         {
             TogglePanelOff(PreGame);
@@ -141,8 +159,15 @@ public class GameManager : MonoBehaviour
             TogglePanelOn(StartHint);
     }
 
+    public void undoMove()
+    {
+        ih.Pop();
+    }
+
     public void openValues()
     {
+        sfx.resource = uiClick;
+        sfx.Play();
         TogglePanelOn(DirMenu);
         TogglePanelOn(IntMenu);
         TogglePanelOff(InstMenu);
@@ -150,6 +175,8 @@ public class GameManager : MonoBehaviour
 
     public void openActions()
     {
+        sfx.resource = uiClick;
+        sfx.Play();
         TogglePanelOff(DirMenu);
         TogglePanelOff(IntMenu);
         TogglePanelOn(InstMenu);
@@ -157,6 +184,8 @@ public class GameManager : MonoBehaviour
 
     public void createMoveBlock()
     {
+        sfx.resource = uiClick;
+        sfx.Play();
         TogglePanelOff(InstMenu);
         ih.SpawnBlock(new MoveBlock());
         return;
@@ -164,6 +193,8 @@ public class GameManager : MonoBehaviour
 
     public void createRotateBlock()
     {
+        sfx.resource = uiClick;
+        sfx.Play();
         TogglePanelOff(InstMenu);
         ih.SpawnBlock(new RotateBlock());
         return;
@@ -171,6 +202,8 @@ public class GameManager : MonoBehaviour
 
     public void createNumBlock(float value)
     {
+        sfx.resource = uiClick;
+        sfx.Play();
         TogglePanelOff(IntMenu);
         TogglePanelOff(DirMenu);
         ih.SpawnBlock(new NumBlock(value));
@@ -178,6 +211,8 @@ public class GameManager : MonoBehaviour
 
     public void createDirBlock(int value)
     {
+        sfx.resource = uiClick;
+        sfx.Play();
         TogglePanelOff(IntMenu);
         TogglePanelOff(DirMenu);
         ih.SpawnBlock(new DirectionBlock(value));
@@ -190,7 +225,6 @@ public class GameManager : MonoBehaviour
 
     public void quitGame()
     {
-        // safe and cleaner to use preprocessor directives
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
         #else

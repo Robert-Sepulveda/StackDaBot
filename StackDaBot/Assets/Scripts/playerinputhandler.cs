@@ -146,9 +146,12 @@ public class playerinputhandler : MonoBehaviour
     // check for death
     public void CheckDeath()
     {
-        playerDied = playerCharacter.CheckKillBoxCollision();
-        if(playerDied)
+        if(playerCharacter.CheckKillBoxCollision() || playerCharacter.checkDeath())
+        {
+            playerDied = true;
             gameNotif = "Death";
+            playerCharacter.tanksfx.Pause();
+        }
     }
 
     // check for win
